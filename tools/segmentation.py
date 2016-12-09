@@ -47,7 +47,7 @@ if __name__ == '__main__':
     '''
     
     keypoints = ft.getLastDetectionKeypoints()    
-    draw_keypoints(imgc, keypoints, edgeThreshold, inter = True, color = 0)
+#    draw_keypoints(imgc, keypoints, edgeThreshold, inter = True, color = 0)
     
     
     while imgc.shape[1] > 1024:

@@ -21,12 +21,17 @@ static void drawCharacter(const LetterCandidate& region, Mat& output, CvMemStora
 		return;
 
 
+  static int mask_id;
+  std::cout << "dbg>drawCharacter>mask " << mask_id << ", region.bbox=" << region.bbox << ", scaleFactor=" << region.scaleFactor << ", mask.rows=" << region.mask.rows << ", cols=" << region.mask.cols << std::endl;
+  imwrite("/tmp/mask"+std::to_string(mask_id)+"_origin.png", region.mask);
+
 	Mat maskImage =  region.mask;
 	if( region.scaleFactor != 1.0)
 	{
 		cv::Mat scaledMask;
 		cv::resize(maskImage, scaledMask, cv::Size(roundf(maskImage.cols * region.scaleFactor), roundf(maskImage.rows * region.scaleFactor)));
 		maskImage = scaledMask;
+    imwrite("/tmp/mask"+std::to_string(mask_id)+"_scaled.png", scaledMask);
 	}else{
 		maskImage =  region.mask.clone();
 	}
@@ -36,12 +41,30 @@ static void drawCharacter(const LetterCandidate& region, Mat& output, CvMemStora
 	cvFindContours( &iplContours, storage, &contour, sizeof(CvContour),
 			CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0) );
 
+
+  //dbg
+  vector<vector<Point> > dbg_contours;
+  vector<Vec4i> dbg_hierarchy;
+  findContours( maskImage, dbg_contours, dbg_hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+  Mat drawing;
+  cvtColor(maskImage, drawing, CV_GRAY2BGR);
+  RNG rng(12345);
+  for( int i = 0; i< dbg_contours.size(); i++ ) {
+    Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+    drawContours( drawing, dbg_contours, i, color, 2, 8, dbg_hierarchy, 0, Point() );
+  }
+  imwrite("/tmp/mask"+std::to_string(mask_id)+"_contours.png", drawing);
+
+
 	cv::Rect roid = region.bbox;
 	roid.width += 1;
 	roid.height += 1;
 	Mat roi = output(roid);
+  imwrite("/tmp/mask"+std::to_string(mask_id)+"_roi.png", roi);
 	try{
 	cv::Mat iplMask = output(region.bbox);
+  imwrite("/tmp/mask"+std::to_string(mask_id)+"_bbox.png", iplMask);
+  std::cout << "dbg>drawCharacter>region.isWord=" << region.isWord << ", quality=" << region.quality << std::endl;
 	if( !region.isWord )
 	{
 		if( region.quality > 0.5 )
@@ -55,6 +78,9 @@ static void drawCharacter(const LetterCandidate& region, Mat& output, CvMemStora
 		std::cout << "Roi: " << region.bbox << ", cols: " << maskImage.cols << ", rows: " << maskImage.rows << std::endl;
 	}
 	//cvDrawContours( &iplMask, contour, color, CvScalar(), 1);
+
+  imwrite("/tmp/output"+std::to_string(mask_id)+"_diff.png", output);
+  mask_id++;
 }
 
 
@@ -104,6 +130,15 @@ Mat createCSERImage(std::vector<LetterCandidate*>& regions, const std::vector<cm
 			}
 		}
 	}
+
+  //dbg
+  Mat cand = output.clone();
+  for(int i = 0; i < regions.size(); i++){
+		Scalar color = Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255));
+    cv::rectangle(cand, regions[i]->bbox.tl(), regions[i]->bbox.br(), color);
+  }
+  imwrite("/tmp/output_candidate.png", cand);
+
 
 	CvMemStorage* storage = cvCreateMemStorage();
 	Mat green = Mat(sourceImage.size(), CV_8UC3, CV_RGB(0, 255, 0));

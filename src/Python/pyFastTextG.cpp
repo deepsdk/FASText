@@ -268,9 +268,11 @@ PyArrayObject* get_char_segmentations(PyArrayObject* img, int numOfDims, npy_int
 			cv::cvtColor(srcImg, segmImg, cv::COLOR_GRAY2BGR);
 		}
 
+
 		cv::Mat cser = createCSERImage(letters, keypoints, keypointsPixels, segmImg);
 		ostringstream os;
 		os << outputDir << "/" << imageName << "_chars.png";
+    std::cout << "dbg>get_char_segmentations>write " << os.str() << std::endl;
 		imwrite(os.str(), cser);
 	}
 
