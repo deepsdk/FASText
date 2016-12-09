@@ -11,8 +11,8 @@ print baseDir
 #sys.path.append(os.path.join(baseDir, "Release/bin" ))
 sys.path.append(os.path.join(baseDir, "Release" ))
 
-sys.path.append("/Users/flipajs/Downloads/temp2/FASText/Release")
-#sys.path.append(os.path.join(baseDir, "Debug" ))
+#sys.path.append("/Users/flipajs/Downloads/temp2/FASText/Release")
+sys.path.append(os.path.join(baseDir, "Debug" ))
 
 import numpy as np
 
